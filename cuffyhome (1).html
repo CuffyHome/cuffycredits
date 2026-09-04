@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบเครดิตร้านค้า ✨ Cuffy Credits</title>
+  
+  <!-- Google Fonts: Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Canvas Confetti สำหรับเอฟเฟกต์หัวใจตอนกด +1 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            kanit: ['Kanit', 'sans-serif'],
+          },
+          colors: {
+            pastel: {
+              bg: '#FFF5F8',
+              card: '#FFFFFF',
+              border: '#FCE4EC',
+              hover: '#FFF0F5',
+              pinkLight: '#FDF2F8',
+              pinkMedium: '#FBCFE8',
+              pinkMain: '#F472B6',
+              pinkDark: '#DB2777',
+              pinkDeep: '#9D174D',
+              textMain: '#583F4C',
+              textMuted: '#967D8B',
+              accentMint: '#A7F3D0',
+              mintDark: '#059669',
+              dangerLight: '#FFE4E6',
+              dangerBorder: '#FECDD3',
+              dangerText: '#E11D48',
+            }
+          },
+          boxShadow: {
+            'soft': '0 8px 30px rgba(244, 114, 182, 0.08)',
+            'pink-glow': '0 4px 20px rgba(244, 114, 182, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background-color: #FFF5F8;
+      background-image: radial-gradient(#FCE7F3 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    
+    /* ซ่อน Scrollbar แนวนอน */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animation เด้งนุ่มๆ */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .floating-badge {
+      animation: floatSlow 3s ease-in-out infinite;
+    }
+
+    /* Animation หัวใจลอย */
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body class="text-pastel-textMain antialiased min-h-screen pb-20 selection:bg-pastel-pinkMedium selection:text-pastel-pinkDeep">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-11/12 max-w-sm pointer-events-none"></div>
+
+  <!-- Header & Navigation -->
+  <header class="bg-white/80 backdrop-blur-md sticky top-0 border-b border-pastel-border z-30 transition-all">
+    <div class="max-w-3xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-300 via-pink-400 to-rose-300 flex items-center justify-center text-white shadow-pink-glow text-lg">
+          <i class="fa-solid fa-heart"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base md:text-lg text-pastel-pinkDeep leading-tight flex items-center gap-1.5">
+            Cuffy Credits
+            <span class="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-medium"><i class="fa-solid fa-circle-check text-[10px]"></i> เช็กเครดิต</span>
+          </h1>
+          <p class="text-xs text-pastel-textMuted">พื้นที่ตรวจสอบเครดิตและรีวิวความโปร่งใส</p>
+        </div>
+      </div>
+      
+      <!-- ปุ่มเปิดฟอร์มเขียนรีวิว -->
+      <button onclick="openReviewModal()" class="bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white text-xs md:text-sm font-medium px-4 py-2.5 rounded-full shadow-pink-glow hover:shadow-lg transition active:scale-95 flex items-center gap-2">
+        <i class="fa-solid fa-pen-nib"></i>
+        <span>เขียนรีวิว / ให้คะแนน</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Store Profile Card -->
+    <section class="bg-white rounded-3xl p-5 md:p-7 border border-pastel-border shadow-soft relative overflow-hidden">
+      <!-- ลวดลายพื้นหลังน่ารักๆ -->
+      <div class="absolute -right-6 -bottom-6 w-36 h-36 bg-pink-50 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -left-6 -top-6 w-32 h-32 bg-rose-50 rounded-full blur-xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-5 text-center md:text-left">
+        <!-- ร้านค้า Avatar -->
+        <div class="relative">
+          <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-pink-200 via-pink-100 to-rose-200 p-1 shadow-md">
+            <div class="w-full h-full rounded-[22px] bg-white flex flex-col items-center justify-center text-pink-400">
+              <i class="fa-solid fa-house-chimney-heart text-3xl text-pastel-pinkMain mb-1"></i>
+              <span class="text-[9px] font-bold tracking-wider text-pink-400">CUFFYHOME</span>
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-1 bg-pastel-mintDark text-white text-[11px] px-2 py-0.5 rounded-full font-medium shadow-sm flex items-center gap-1">
+            <i class="fa-solid fa-shield-check text-[10px]"></i> ปลอดภัย
+          </span>
+        </div>
+
+        <!-- รายละเอียดร้านค้า -->
+        <div class="flex-1 space-y-2">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-xl font-bold text-pastel-pinkDeep">ร้าน Cuffyhome ✨</h2>
+              <p class="text-xs text-pastel-textMuted mt-0.5 leading-relaxed">
+                ยินดีต้อนรับเข้าสู่บ้านของคัฟฟี่ เว็บไซต์สำหรับเก็บเครดิต <br>
+                <span class="text-pink-500 font-medium">** เครดิตเก่าที่เฟสเดิม 500 ++ โดนปิด TT</span>
+              </p>
+            </div>
+            
+            <!-- ปรับปรุงส่วนช่องทางการติดต่อ -->
+            <div class="flex flex-col sm:flex-row items-center justify-center md:justify-end gap-2 text-xs text-pastel-textMuted mt-2 md:mt-0">
+              <a href="https://www.facebook.com/Chalisa.Pooploy" target="_blank" class="bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-xl border border-pink-100 transition flex items-center gap-1.5">
+                <i class="fa-brands fa-facebook text-blue-600"></i>
+                <span>Chalisa Pooploy</span>
+              </a>
+              <a href="https://line.me/R/ti/p/@664chwum" target="_blank" class="bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-xl border border-pink-100 transition flex items-center gap-1.5">
+                <i class="fa-brands fa-line text-emerald-500"></i>
+                <span>@664chwum</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Stat Cards -->
+          <div class="grid grid-cols-3 gap-2.5 pt-2">
+            <div class="bg-pastel-pinkLight/80 border border-pastel-pinkMedium/40 rounded-2xl p-2.5 text-center">
+              <span class="text-[11px] text-pastel-textMuted block">คะแนนความน่าเชื่อถือ</span>
+              <span class="text-lg md:text-xl font-bold text-pastel-pinkDeep" id="trustScorePercent">100%</span>
+            </div>
+            <div class="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-2.5 text-center">
+              <span class="text-[11px] text-emerald-700 block">เครดิตบวก (+1)</span>
+              <span class="text-lg md:text-xl font-bold text-emerald-600" id="statPosCount">0</span>
+            </div>
+            <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-2.5 text-center">
+              <span class="text-[11px] text-rose-700 block">รายงานโกง (-1)</span>
+              <span class="text-lg md:text-xl font-bold text-rose-500" id="statNegCount">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-Click Fast +1 Action Banner (กด +1 ด่วนแบบไม่ต้องพิมพ์) -->
+    <section class="bg-gradient-to-r from-pink-100 via-rose-50 to-pink-100 border border-pink-200 rounded-3xl p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+      <div class="flex items-center gap-3.5 text-center sm:text-left">
+        <div class="w-12 h-12 rounded-2xl bg-white text-pastel-pinkMain flex items-center justify-center text-2xl shadow-sm floating-badge">
+          💖
+        </div>
+        <div>
+          <h3 class="font-bold text-sm md:text-base text-pastel-pinkDeep">ได้รับสินค้าจาก Cuffyhome แล้วใช่ไหมคะ?</h3>
+          <p class="text-xs text-pastel-textMuted">สามารถกดส่งเครดิต +1 ด่วนให้ทางร้านได้ในคลิกเดียวเลยน้า 🌸</p>
+        </div>
+      </div>
+
+      <button onclick="quickAddPositiveCredit()" class="w-full sm:w-auto px-6 py-3 bg-white hover:bg-pink-50 text-pastel-pinkDeep font-semibold text-sm rounded-2xl border-2 border-pastel-pinkMain shadow-sm hover:shadow active:scale-95 transition flex items-center justify-center gap-2 group">
+        <i class="fa-solid fa-heart text-pink-500 group-hover:scale-125 transition-transform"></i>
+        <span>กด +1 เครดิตด่วน ✨</span>
+      </button>
+    </section>
+
+    <!-- Filter & Search Bar -->
+    <section class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+      <!-- Search -->
+      <div class="relative w-full sm:w-64">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-pastel-textMuted"></i>
+        <input type="text" id="searchInput" oninput="filterReviews()" placeholder="ค้นหาชื่อลูกค้า หรือรีวิว..." 
+          class="w-full bg-white border border-pastel-border rounded-2xl pl-9 pr-4 py-2 text-xs md:text-sm focus:outline-none focus:border-pastel-pinkMain transition text-pastel-textMain placeholder:text-pastel-textMuted/70 shadow-sm">
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="flex items-center bg-white p-1 rounded-2xl border border-pastel-border shadow-sm w-full sm:w-auto overflow-x-auto no-scrollbar">
+        <button onclick="setFilter('all')" id="filterAll" class="flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition bg-pastel-pinkMain text-white shadow-xs">
+          ทั้งหมด (<span id="countAll">0</span>)
+        </button>
+        <button onclick="setFilter('positive')" id="filterPos" class="flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition text-pastel-textMuted hover:text-pastel-pinkDeep">
+          เครดิตดี (+1) (<span id="countPos">0</span>)
+        </button>
+        <button onclick="setFilter('negative')" id="filterNeg" class="flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition text-pastel-textMuted hover:text-rose-600">
+          รายงาน (-1) (<span id="countNeg">0</span>)
+        </button>
+      </div>
+    </section>
+
+    <!-- Review Cards Feed -->
+    <section id="reviewList" class="space-y-3.5">
+      <!-- Card items will be rendered by JS -->
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: เพิ่มเครดิต / รีวิว ==================== -->
+  <div id="reviewModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-pastel-border overflow-hidden transform scale-95 transition-transform duration-200" id="modalBox">
+      
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50 px-6 py-4 border-b border-pastel-border flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🌸</span>
+          <h3 class="font-bold text-base text-pastel-pinkDeep">ส่งเครดิต / รีวิวร้าน Cuffyhome</h3>
+        </div>
+        <button onclick="closeReviewModal()" class="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-pastel-textMuted hover:text-pastel-pinkDeep flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="reviewForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        
+        <!-- Action Type Selectors (+1 หรือ -1) -->
+        <div>
+          <label class="block text-xs font-medium text-pastel-textMuted mb-2">เลือกประเภทการให้คะแนน <span class="text-pink-500">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" onclick="selectType('positive')" id="typePosBtn" 
+              class="flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-pastel-pinkMain bg-pastel-pinkLight text-pastel-pinkDeep shadow-sm">
+              <span class="text-2xl">💖</span>
+              <span class="font-bold text-sm">ให้เครดิต (+1)</span>
+              <span class="text-[11px] text-pastel-textMuted">ได้รับของแล้ว / บริการดี</span>
+            </button>
+            <button type="button" onclick="selectType('negative')" id="typeNegBtn" 
+              class="flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-transparent bg-gray-50 text-gray-500 hover:bg-rose-50">
+              <span class="text-2xl">⚠️</span>
+              <span class="font-bold text-sm">รายงานโกง (-1)</span>
+              <span class="text-[11px] text-gray-400">พบปัญหา / โกงเงิน</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer Name (Optional) -->
+        <div>
+          <label class="block text-xs font-medium text-pastel-textMuted mb-1.5 flex items-center justify-between">
+            <span>ชื่อของคุณ / ชื่อบัญชี (Account)</span>
+            <span class="text-[10px] text-pink-400">ไม่บังคับ (เว้นว่าง = ไม่ระบุตัวตน)</span>
+          </label>
+          <div class="relative">
+            <i class="fa-regular fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-pastel-textMuted"></i>
+            <input type="text" id="modalAuthor" placeholder="เช่น @cuffy_fan, คุณแพรว" 
+              class="w-full bg-pastel-pinkLight/40 border border-pastel-border rounded-2xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-pastel-pinkMain transition">
+          </div>
+        </div>
+
+        <!-- Quick Tag Chips (สำหรับ +1) -->
+        <div id="quickTagsContainer">
+          <label class="block text-xs font-medium text-pastel-textMuted mb-1.5">แท็กความประทับใจด่วน (แตะเพื่อเลือก)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="toggleTag(this, 'ส่งไวมาก ⚡')" class="tag-chip text-xs px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 text-pastel-textMain transition">ส่งไวมาก ⚡</button>
+            <button type="button" onclick="toggleTag(this, 'แพ็กของดีสุดๆ 📦')" class="tag-chip text-xs px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 text-pastel-textMain transition">แพ็กของดีสุดๆ 📦</button>
+            <button type="button" onclick="toggleTag(this, 'แม่ค้าน่ารัก ตอบไว 💬')" class="tag-chip text-xs px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 text-pastel-textMain transition">แม่ค้าน่ารัก ตอบไว 💬</button>
+            <button type="button" onclick="toggleTag(this, 'สินค้าแท้ 100% ✨')" class="tag-chip text-xs px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 text-pastel-textMain transition">สินค้าแท้ 100% ✨</button>
+            <button type="button" onclick="toggleTag(this, 'มีของแถมด้วย น่ารักมาก 🎁')" class="tag-chip text-xs px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 text-pastel-textMain transition">มีของแถมด้วย 🎁</button>
+          </div>
+        </div>
+
+        <!-- Review / Detail Textarea -->
+        <div>
+          <label class="block text-xs font-medium text-pastel-textMuted mb-1.5" id="commentLabel">
+            ข้อความรีวิวเพิ่มเติม (ไม่จำเป็นต้องพิมพ์ก็ได้ค่ะ)
+          </label>
+          <textarea id="modalComment" rows="3" placeholder="เขียนความประทับใจ หรือข้อความให้กำลังใจร้าน Cuffyhome..." 
+            class="w-full bg-pastel-pinkLight/40 border border-pastel-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-pastel-pinkMain transition"></textarea>
+        </div>
+
+        <!-- Optional Photo upload for +1 -->
+        <div id="positiveUploadContainer">
+          <label class="block text-xs font-medium text-pastel-textMuted mb-1.5">แนบรูปถ่ายสินค้าที่ได้รับ (ไม่บังคับ)</label>
+          <div class="flex items-center gap-3">
+            <label class="cursor-pointer bg-white hover:bg-pink-50 text-pastel-pinkDeep border border-pastel-border px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-2 transition shadow-xs">
+              <i class="fa-solid fa-camera text-pink-400"></i>
+              <span>เลือกรูปถ่าย</span>
+              <input type="file" id="posImageInput" accept="image/*" class="hidden" onchange="handleImagePreview(event, 'posPreview', 'posPreviewContainer')">
+            </label>
+            <span class="text-[11px] text-pastel-textMuted" id="posImageName">ยังไม่ได้เลือกรูป</span>
+          </div>
+          <!-- Preview -->
+          <div id="posPreviewContainer" class="mt-2 hidden relative w-20 h-20 rounded-xl overflow-hidden border border-pink-200 group">
+            <img id="posPreview" src="" class="w-full h-full object-cover">
+            <button type="button" onclick="removeImage('posImageInput', 'posPreviewContainer', 'posImageName')" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] hover:bg-rose-500">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- REQUIRED Evidence Section for -1 -->
+        <div id="negativeEvidenceContainer" class="hidden bg-rose-50/70 border-2 border-dashed border-rose-200 rounded-2xl p-4 space-y-3">
+          <div class="flex items-start gap-2 text-rose-700">
+            <i class="fa-solid fa-triangle-exclamation text-base mt-0.5 text-rose-500"></i>
+            <div>
+              <h4 class="font-bold text-xs text-rose-800">จำเป็นต้องแนบหลักฐานการโกง (-1)</h4>
+              <p class="text-[11px] text-rose-600 leading-relaxed">เพื่อความยุติธรรมและป้องกันการกลั่นแกล้ง กรุณาแนบรูปภาพ เช่น สลิปโอนเงิน ประวัติการแชท หรือใบแจ้งความ</p>
+            </div>
+          </div>
+
+          <!-- Evidence File Upload Input -->
+          <div class="space-y-2">
+            <label class="cursor-pointer block bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 p-3 rounded-2xl text-center text-xs font-medium transition">
+              <i class="fa-solid fa-file-arrow-up text-lg block mb-1 text-rose-400"></i>
+              <span>คลิกเพื่ออัปโหลดหลักฐานรูปภาพ *</span>
+              <input type="file" id="negEvidenceInput" accept="image/*" class="hidden" onchange="handleImagePreview(event, 'negPreview', 'negPreviewContainer')">
+            </label>
+            <p id="negImageName" class="text-[11px] text-center text-rose-500 font-medium">ยังไม่มีหลักฐานแนบ</p>
+          </div>
+
+          <!-- Negative Image Preview -->
+          <div id="negPreviewContainer" class="hidden relative w-full h-36 rounded-xl overflow-hidden border border-rose-300">
+            <img id="negPreview" src="" class="w-full h-full object-cover">
+            <button type="button" onclick="removeImage('negEvidenceInput', 'negPreviewContainer', 'negImageName')" class="absolute top-2 right-2 bg-rose-600 text-white rounded-full px-2.5 py-1 text-xs font-medium flex items-center gap-1 shadow-md hover:bg-rose-700">
+              <i class="fa-solid fa-trash-can"></i> ลบรูป
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white font-medium text-sm rounded-2xl shadow-pink-glow active:scale-[0.99] transition flex items-center justify-center gap-2">
+            <span>ส่งคะแนนเครดิต ✨</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ขยายดูรูปภาพหลักฐาน ==================== -->
+  <div id="imageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200" onclick="closeImageModal()">
+    <div class="relative max-w-2xl max-h-[90vh] bg-transparent flex flex-col items-center" onclick="event.stopPropagation()">
+      <img id="fullImagePreview" src="" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border-2 border-white/30">
+      <p id="imageModalCaption" class="text-white text-xs mt-3 bg-black/50 px-4 py-1.5 rounded-full"></p>
+      <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-pink-300 text-xl">
+        <i class="fa-solid fa-xmark"></i> ปิด
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    let reviews = [];
+
+    let currentFormType = 'positive';
+    let currentFilter = 'all';
+    let selectedTags = [];
+    let uploadedImageBase64 = null;
+
+    // --- เริ่มต้นโหลดหน้าเว็บ ---
+    window.addEventListener('DOMContentLoaded', () => {
+      renderReviews();
+      updateStats();
+    });
+
+    // --- สลับประเภทในฟอร์ม (+1 หรือ -1) ---
+    function selectType(type) {
+      currentFormType = type;
+      const typePosBtn = document.getElementById('typePosBtn');
+      const typeNegBtn = document.getElementById('typeNegBtn');
+      const quickTagsContainer = document.getElementById('quickTagsContainer');
+      const posUploadContainer = document.getElementById('positiveUploadContainer');
+      const negEvidenceContainer = document.getElementById('negativeEvidenceContainer');
+      const commentLabel = document.getElementById('commentLabel');
+      const modalComment = document.getElementById('modalComment');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (type === 'positive') {
+        typePosBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-pastel-pinkMain bg-pastel-pinkLight text-pastel-pinkDeep shadow-sm";
+        typeNegBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-transparent bg-gray-50 text-gray-500 hover:bg-rose-50";
+        
+        quickTagsContainer.classList.remove('hidden');
+        posUploadContainer.classList.remove('hidden');
+        negEvidenceContainer.classList.add('hidden');
+        
+        commentLabel.innerHTML = 'ข้อความรีวิวเพิ่มเติม (ไม่จำเป็นต้องพิมพ์ก็ได้ค่ะ)';
+        modalComment.placeholder = 'เขียนความประทับใจ หรือข้อความให้กำลังใจร้าน Cuffyhome...';
+        submitBtn.className = "w-full py-3.5 bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white font-medium text-sm rounded-2xl shadow-pink-glow active:scale-[0.99] transition flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>ส่งคะแนนเครดิต ✨</span>';
+      } else {
+        typeNegBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-rose-500 bg-rose-50 text-rose-700 shadow-sm";
+        typePosBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-transparent bg-gray-50 text-gray-500 hover:bg-pink-50";
+        
+        quickTagsContainer.classList.add('hidden');
+        posUploadContainer.classList.add('hidden');
+        negEvidenceContainer.classList.remove('hidden');
+        
+        commentLabel.innerHTML = 'รายละเอียดการโกง / ปัญหาที่พบ <span class="text-rose-500">*จำเป็น</span>';
+        modalComment.placeholder = 'ระบุรายละเอียด เช่น วันที่โอนเงิน, ช่องทางที่สั่งซื้อ, พฤติกรรมการโกง...';
+        submitBtn.className = "w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-medium text-sm rounded-2xl shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>ส่งรายงานการโกง (-1) ⚠️</span>';
+      }
+    }
+
+    // --- เลือก Tag ด่วน ---
+    function toggleTag(btn, tagName) {
+      if (selectedTags.includes(tagName)) {
+        selectedTags = selectedTags.filter(t => t !== tagName);
+        btn.classList.remove('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+        btn.classList.add('bg-white', 'text-pastel-textMain', 'border-pink-200');
+      } else {
+        selectedTags.push(tagName);
+        btn.classList.remove('bg-white', 'text-pastel-textMain', 'border-pink-200');
+        btn.classList.add('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+      }
+    }
+
+    // --- ฟังก์ชันกด +1 ด่วน (One-Click +1) ---
+    function quickAddPositiveCredit() {
+      // เอฟเฟกต์ Confetti หัวใจ
+      triggerConfettiHearts();
+
+      const newCredit = {
+        id: Date.now(),
+        type: 'positive',
+        author: 'ลูกค้า (กด +1 ด่วน)',
+        comment: '',
+        tags: ['กดให้เครดิตด่วน 💖'],
+        image: null,
+        date: 'เมื่อสักครู่',
+        likes: 0
+      };
+
+      reviews.unshift(newCredit);
+      renderReviews();
+      updateStats();
+      showToast('ขอบคุณสำหรับเครดิต +1 ให้ร้าน Cuffyhome นะคะ ✨', 'success');
+    }
+
+    // --- ประมวลผลเมื่อกดส่งฟอร์ม Modal ---
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const author = document.getElementById('modalAuthor').value.trim() || 'ไม่ระบุตัวตน';
+      const comment = document.getElementById('modalComment').value.trim();
+
+      // ตรวจสอบเงื่อนไขสำหรับ -1 (ต้องมีหลักฐานและคำอธิบาย)
+      if (currentFormType === 'negative') {
+        if (!uploadedImageBase64) {
+          showToast('กรุณาแนบรูปภาพหลักฐานการโกงสำหรับการรายงาน -1 ค่ะ', 'error');
+          return;
+        }
+        if (!comment) {
+          showToast('กรุณาระบุรายละเอียดการโกงด้วยนะคะ', 'error');
+          return;
+        }
+      }
+
+      // บันทึก Review ใหม่
+      const newReview = {
+        id: Date.now(),
+        type: currentFormType,
+        author: author,
+        comment: comment,
+        tags: currentFormType === 'positive' ? [...selectedTags] : [],
+        image: uploadedImageBase64 || null,
+        date: 'เมื่อสักครู่',
+        likes: 0
+      };
+
+      reviews.unshift(newReview);
+      renderReviews();
+      updateStats();
+      closeReviewModal();
+
+      if (currentFormType === 'positive') {
+        triggerConfettiHearts();
+        showToast('บันทึกเครดิตและรีวิวของคุณเรียบร้อยแล้ว ขอบคุณนะคะ 🌸', 'success');
+      } else {
+        showToast('รับเรื่องรายงาน -1 เรียบร้อยแล้ว ระบบได้บันทึกหลักฐานไว้แล้วค่ะ', 'warning');
+      }
+    }
+
+    // --- จัดการรูปภาพ Preview & Base64 ---
+    function handleImagePreview(event, previewId, containerId) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedImageBase64 = e.target.result;
+        document.getElementById(previewId).src = uploadedImageBase64;
+        document.getElementById(containerId).classList.remove('hidden');
+
+        if (previewId === 'posPreview') {
+          document.getElementById('posImageName').innerText = file.name;
+        } else {
+          document.getElementById('negImageName').innerText = 'แนบแล้ว: ' + file.name;
+          document.getElementById('negImageName').className = "text-[11px] text-center text-emerald-600 font-medium";
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage(inputId, containerId, nameId) {
+      document.getElementById(inputId).value = '';
+      document.getElementById(containerId).classList.add('hidden');
+      uploadedImageBase64 = null;
+      if (nameId === 'posImageName') {
+        document.getElementById(nameId).innerText = 'ยังไม่ได้เลือกรูป';
+      } else {
+        document.getElementById(nameId).innerText = 'ยังไม่มีหลักฐานแนบ';
+        document.getElementById(nameId).className = "text-[11px] text-center text-rose-500 font-medium";
+      }
+    }
+
+    // --- ฟังก์ชันกด Like ให้คะแนนคอมเมนต์ ---
+    function toggleLike(id) {
+      const item = reviews.find(r => r.id === id);
+      if (item) {
+        item.likes += 1;
+        renderReviews();
+      }
+    }
+
+    // --- ตัวกรองประเภท (Filter) ---
+    function setFilter(filter) {
+      currentFilter = filter;
+      const buttons = {
+        all: document.getElementById('filterAll'),
+        positive: document.getElementById('filterPos'),
+        negative: document.getElementById('filterNeg')
+      };
+
+      Object.keys(buttons).forEach(key => {
+        if (key === filter) {
+          buttons[key].className = "flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition bg-pastel-pinkMain text-white shadow-xs";
+        } else {
+          buttons[key].className = "flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition text-pastel-textMuted hover:text-pastel-pinkDeep";
+        }
+      });
+
+      renderReviews();
+    }
+
+    function filterReviews() {
+      renderReviews();
+    }
+
+    // --- เรนเดอร์รายการรีวิว ---
+    function renderReviews() {
+      const listContainer = document.getElementById('reviewList');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      // กรองข้อมูล
+      let filtered = reviews.filter(r => {
+        const matchesFilter = currentFilter === 'all' || r.type === currentFilter;
+        const matchesSearch = r.author.toLowerCase().includes(searchTerm) || 
+                              r.comment.toLowerCase().includes(searchTerm) ||
+                              r.tags.some(t => t.toLowerCase().includes(searchTerm));
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="bg-white rounded-3xl p-8 text-center border border-pastel-border shadow-soft">
+            <span class="text-4xl block mb-2">🍃</span>
+            <p class="text-sm font-medium text-pastel-pinkDeep">ยังไม่มีรายการเครดิตหรือรีวิวในระบบ</p>
+            <p class="text-xs text-pastel-textMuted mt-1">สามารถกดปุ่ม "+1 เครดิตด่วน" ด้านบน หรือเขียนรีวิวเป็นคนแรกได้เลยค่ะ</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = filtered.map(r => {
+        const isPos = r.type === 'positive';
+        return `
+          <article class="bg-white rounded-3xl p-4 md:p-5 border ${isPos ? 'border-pastel-border hover:border-pink-200' : 'border-rose-200 bg-rose-50/20'} shadow-soft transition duration-200 animate-pop">
+            <div class="flex items-start justify-between gap-3">
+              
+              <!-- Avatar & Header info -->
+              <div class="flex items-start gap-3 flex-1">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-base shrink-0 ${
+                  isPos ? 'bg-pink-100 text-pastel-pinkMain' : 'bg-rose-100 text-rose-500'
+                }">
+                  <i class="${isPos ? 'fa-solid fa-heart' : 'fa-solid fa-triangle-exclamation'}"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2 mb-1">
+                    <span class="font-bold text-xs md:text-sm text-pastel-pinkDeep truncate">${escapeHtml(r.author)}</span>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
+                      isPos ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-100 text-rose-700 border border-rose-200'
+                    }">
+                      ${isPos ? '+1 ให้เครดิต' : '-1 แจ้งโกง'}
+                    </span>
+                    <span class="text-[11px] text-pastel-textMuted ml-auto sm:ml-0">• ${r.date}</span>
+                  </div>
+
+                  <!-- ข้อความรีวิว -->
+                  ${r.comment ? `
+                    <p class="text-xs md:text-sm text-pastel-textMain mt-1.5 leading-relaxed break-words">${escapeHtml(r.comment)}</p>
+                  ` : `
+                    <p class="text-xs text-pastel-textMuted italic mt-1">(กดรับรองเครดิตเรียบร้อย 💖)</p>
+                  `}
+
+                  <!-- Tags -->
+                  ${r.tags && r.tags.length > 0 ? `
+                    <div class="flex flex-wrap gap-1 mt-2.5">
+                      ${r.tags.map(tag => `
+                        <span class="text-[11px] bg-pink-50 text-pastel-pinkDeep px-2.5 py-0.5 rounded-lg border border-pink-100 font-normal">
+                          ${escapeHtml(tag)}
+                        </span>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  <!-- แนบรูปภาพ / หลักฐาน -->
+                  ${r.image ? `
+                    <div class="mt-3">
+                      <div class="inline-block relative rounded-2xl overflow-hidden border ${isPos ? 'border-pink-200' : 'border-rose-300'} shadow-xs cursor-pointer group" onclick="openImageModal('${r.image}', '${isPos ? 'รูปภาพสินค้าจากลูกค้า' : 'หลักฐานการโกง'}')">
+                        <img src="${r.image}" class="w-24 h-24 sm:w-32 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-200" alt="หลักฐาน/รูปรีวิว">
+                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs gap-1">
+                          <i class="fa-solid fa-magnifying-glass-plus"></i> ขยาย
+                        </div>
+                      </div>
+                      ${!isPos ? `
+                        <p class="text-[11px] text-rose-600 font-medium mt-1"><i class="fa-solid fa-paperclip"></i> มีหลักฐานการโกงแนบ</p>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Like button -->
+              <button onclick="toggleLike(${r.id})" class="flex items-center gap-1.5 text-xs text-pastel-textMuted hover:text-pastel-pinkMain bg-pastel-pinkLight/60 hover:bg-pastel-pinkLight px-2.5 py-1.5 rounded-xl transition active:scale-90 shrink-0">
+                <i class="fa-regular fa-thumbs-up text-xs"></i>
+                <span class="font-medium">${r.likes || 0}</span>
+              </button>
+
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // --- อัปเดตตัวเลขสถิติและคะแนนรวม ---
+    function updateStats() {
+      const posCount = reviews.filter(r => r.type === 'positive').length;
+      const negCount = reviews.filter(r => r.type === 'negative').length;
+      const total = reviews.length;
+
+      document.getElementById('statPosCount').innerText = `+${posCount}`;
+      document.getElementById('statNegCount').innerText = `-${negCount}`;
+      document.getElementById('countAll').innerText = total;
+      document.getElementById('countPos').innerText = posCount;
+      document.getElementById('countNeg').innerText = negCount;
+
+      let percentage = total > 0 ? Math.round((posCount / total) * 100) : 100;
+      document.getElementById('trustScorePercent').innerText = `${percentage}%`;
+    }
+
+    // --- ฟังก์ชันเปิด/ปิด Review Modal ---
+    function openReviewModal() {
+      const modal = document.getElementById('reviewModal');
+      const box = document.getElementById('modalBox');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeReviewModal() {
+      const modal = document.getElementById('reviewModal');
+      const box = document.getElementById('modalBox');
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('reviewForm').reset();
+        selectedTags = [];
+        uploadedImageBase64 = null;
+        document.querySelectorAll('.tag-chip').forEach(btn => {
+          btn.classList.remove('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+          btn.classList.add('bg-white', 'text-pastel-textMain', 'border-pink-200');
+        });
+        removeImage('posImageInput', 'posPreviewContainer', 'posImageName');
+        removeImage('negEvidenceInput', 'negPreviewContainer', 'negImageName');
+        selectType('positive');
+      }, 200);
+    }
+
+    // --- ฟังก์ชันเปิดดูรูปขยาย (Image Lightbox) ---
+    function openImageModal(imgSrc, caption) {
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('fullImagePreview');
+      const cap = document.getElementById('imageModalCaption');
+      img.src = imgSrc;
+      cap.innerText = caption || 'รูปภาพประกอบ';
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+      }, 10);
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // --- Custom Toast Alert Notification ---
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let bgClass = 'bg-white border-pastel-pinkMain text-pastel-pinkDeep shadow-pink-glow';
+      let icon = '<i class="fa-solid fa-circle-check text-pink-500 text-base"></i>';
+
+      if (type === 'error') {
+        bgClass = 'bg-rose-50 border-rose-400 text-rose-800 shadow-md';
+        icon = '<i class="fa-solid fa-circle-exclamation text-rose-500 text-base"></i>';
+      } else if (type === 'warning') {
+        bgClass = 'bg-amber-50 border-amber-300 text-amber-800 shadow-md';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-base"></i>';
+      }
+
+      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl border ${bgClass} text-xs md:text-sm font-medium animate-pop pointer-events-auto transition-all`;
+      toast.innerHTML = `
+        ${icon}
+        <span class="flex-1">${escapeHtml(message)}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // --- เอฟเฟกต์หัวใจ Confetti ---
+    function triggerConfettiHearts() {
+      try {
+        confetti({
+          particleCount: 40,
+          spread: 60,
+          origin: { y: 0.8 },
+          colors: ['#F472B6', '#FDA4AF', '#FBCFE8', '#FFF1F2']
+        });
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    // ฟังก์ชันป้องกัน XSS
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
