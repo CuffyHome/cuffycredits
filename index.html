@@ -377,59 +377,8 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    // ข้อมูลเริ่มต้นสำหรับแสดงตัวอย่าง
-    let reviews = [
-      {
-        id: 1,
-        type: 'positive',
-        author: '@fah_sakura',
-        comment: 'ได้รับสบู่คัฟฟี่แล้วค่า ห่อมาหนาแน่นมากๆ กลิ่นหอมฟิน ของแถมน่ารักสุดใจเลยยย 💖 ขอบคุณนะคะ',
-        tags: ['ส่งไวมาก ⚡', 'แพ็กของดีสุดๆ 📦', 'มีของแถมด้วย 🎁'],
-        image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80',
-        date: '10 นาทีที่แล้ว',
-        likes: 4
-      },
-      {
-        id: 2,
-        type: 'positive',
-        author: 'คุณพิมลภัส',
-        comment: '',
-        tags: ['สินค้าแท้ 100% ✨'],
-        image: null,
-        date: '45 นาทีที่แล้ว',
-        likes: 1
-      },
-      {
-        id: 3,
-        type: 'positive',
-        author: 'ไม่ระบุตัวตน',
-        comment: '', // กด +1 เฉยๆ
-        tags: [],
-        image: null,
-        date: '2 ชั่วโมงที่แล้ว',
-        likes: 0
-      },
-      {
-        id: 4,
-        type: 'positive',
-        author: '@khem_khem',
-        comment: 'แม่ค้าร้าน Cuffyhome ตอบแชทสุภาพและใจดีมาก แนะนำร้านนี้เลยค่ะ ไว้มาอุดหนุนอีกแน่นอนค่า ✨🌸',
-        tags: ['แม่ค้าน่ารัก ตอบไว 💬'],
-        image: null,
-        date: 'เมื่อวานนี้',
-        likes: 3
-      },
-      {
-        id: 5,
-        type: 'negative',
-        author: '@user_report99',
-        comment: 'โอนเงินยอด 450 บาทแล้วไม่ยอมส่งของ ผลัดวันมา 2 สัปดาห์สุดท้ายบล็อกหนีครับ (ตัวอย่างหลักฐานแนบด้านล่าง)',
-        tags: [],
-        image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80',
-        date: '3 วันที่แล้ว',
-        likes: 12
-      }
-    ];
+    // เริ่มต้นระบบด้วยข้อมูลรีวิวว่างเปล่า (0 รีวิว)
+    let reviews = [];
 
     let currentFormType = 'positive';
     let currentFilter = 'all';
