@@ -113,11 +113,10 @@
       </div>
       
       <!-- ปุ่มเปิดฟอร์มเขียนรีวิว -->
-        <button onclick="openReviewModal()" class="bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white text-xs md:text-sm font-medium px-4 py-2.5 rounded-full shadow-pink-glow hover:shadow-lg transition active:scale-95 flex items-center gap-2">
-          <i class="fa-solid fa-pen-nib"></i>
-          <span>เขียนรีวิว / ให้คะแนน</span>
-        </button>
-      </div>
+      <button onclick="openReviewModal()" class="bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white text-xs md:text-sm font-medium px-4 py-2.5 rounded-full shadow-pink-glow hover:shadow-lg transition active:scale-95 flex items-center gap-2">
+        <i class="fa-solid fa-pen-nib"></i>
+        <span>เขียนรีวิว / ให้คะแนน</span>
+      </button>
     </div>
   </header>
 
@@ -148,7 +147,10 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
               <h2 class="text-xl font-bold text-pastel-pinkDeep">ร้าน Cuffyhome ✨</h2>
-              <p class="text-xs text-pastel-textMuted mt-0.5">สินค้าของแท้พร้อมส่ง • สบู่คัฟฟี่ • ดูแลผิวพรรณ • ยินดีต้อนรับลูกค้าทุกคนค่ะ 🌸</p>
+              <p class="text-xs text-pastel-textMuted mt-0.5 leading-relaxed">
+                ยินดีต้อนรับเข้าสู่บ้านของคัฟฟี่ เว็บไซต์สำหรับเก็บเครดิต <br>
+                <span class="text-pink-500 font-medium">** เครดิตเก่าที่เฟสเดิม 500 ++ โดนปิด TT</span>
+              </p>
             </div>
             
             <!-- ปรับปรุงส่วนช่องทางการติดต่อ -->
@@ -231,7 +233,7 @@
 
   </main>
 
-  <!-- ==================== MODAL: เพิ่มเครดิต / รีวิว (ลูกค้า) ==================== -->
+  <!-- ==================== MODAL: เพิ่มเครดิต / รีวิว ==================== -->
   <div id="reviewModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-pastel-border overflow-hidden transform scale-95 transition-transform duration-200" id="modalBox">
       
@@ -652,8 +654,7 @@
       listContainer.innerHTML = filtered.map(r => {
         const isPos = r.type === 'positive';
         return `
-          <article class="bg-white rounded-3xl p-4 md:p-5 border ${isPos ? 'border-pastel-border hover:border-pink-200' : 'border-rose-200 bg-rose-50/20'} shadow-soft transition duration-200 animate-pop relative group">
-            
+          <article class="bg-white rounded-3xl p-4 md:p-5 border ${isPos ? 'border-pastel-border hover:border-pink-200' : 'border-rose-200 bg-rose-50/20'} shadow-soft transition duration-200 animate-pop">
             <div class="flex items-start justify-between gap-3">
               
               <!-- Avatar & Header info -->
@@ -696,9 +697,9 @@
                   <!-- แนบรูปภาพ / หลักฐาน -->
                   ${r.image ? `
                     <div class="mt-3">
-                      <div class="inline-block relative rounded-2xl overflow-hidden border ${isPos ? 'border-pink-200' : 'border-rose-300'} shadow-xs cursor-pointer group/img" onclick="openImageModal('${r.image}', '${isPos ? 'รูปภาพสินค้าจากลูกค้า' : 'หลักฐานการโกง'}')">
-                        <img src="${r.image}" class="w-24 h-24 sm:w-32 sm:h-32 object-cover group-hover/img:scale-105 transition-transform duration-200" alt="หลักฐาน/รูปรีวิว">
-                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center text-white text-xs gap-1">
+                      <div class="inline-block relative rounded-2xl overflow-hidden border ${isPos ? 'border-pink-200' : 'border-rose-300'} shadow-xs cursor-pointer group" onclick="openImageModal('${r.image}', '${isPos ? 'รูปภาพสินค้าจากลูกค้า' : 'หลักฐานการโกง'}')">
+                        <img src="${r.image}" class="w-24 h-24 sm:w-32 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-200" alt="หลักฐาน/รูปรีวิว">
+                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs gap-1">
                           <i class="fa-solid fa-magnifying-glass-plus"></i> ขยาย
                         </div>
                       </div>
@@ -742,7 +743,6 @@
     function openReviewModal() {
       const modal = document.getElementById('reviewModal');
       const box = document.getElementById('modalBox');
-
       modal.classList.remove('hidden');
       setTimeout(() => {
         modal.classList.remove('opacity-0');
@@ -758,7 +758,6 @@
       setTimeout(() => {
         modal.classList.add('hidden');
         document.getElementById('reviewForm').reset();
-        
         selectedTags = [];
         uploadedImageBase64 = null;
         document.querySelectorAll('.tag-chip').forEach(btn => {
