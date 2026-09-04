@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบเครดิตร้านค้า ✨ Cuffy Credit Board</title>
+  <title>ระบบเครดิตร้านค้า ✨ Cuffy Credits</title>
   
   <!-- Google Fonts: Kanit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -377,10 +377,423 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    // ตั้งค่าให้รีวิวเริ่มต้นเป็น 0 (ค่าว่าง) ตามที่คุณต้องการ
+    // เริ่มต้นให้รีวิวเป็นค่าว่าง (0 รีวิว)
     let reviews = [];
 
     let currentFormType = 'positive';
     let currentFilter = 'all';
     let selectedTags = [];
-// ... existing code ... -->
+    let uploadedImageBase64 = null;
+
+    // --- เริ่มต้นโหลดหน้าเว็บ ---
+    window.addEventListener('DOMContentLoaded', () => {
+      renderReviews();
+      updateStats();
+    });
+
+    // --- สลับประเภทในฟอร์ม (+1 หรือ -1) ---
+    function selectType(type) {
+      currentFormType = type;
+      const typePosBtn = document.getElementById('typePosBtn');
+      const typeNegBtn = document.getElementById('typeNegBtn');
+      const quickTagsContainer = document.getElementById('quickTagsContainer');
+      const posUploadContainer = document.getElementById('positiveUploadContainer');
+      const negEvidenceContainer = document.getElementById('negativeEvidenceContainer');
+      const commentLabel = document.getElementById('commentLabel');
+      const modalComment = document.getElementById('modalComment');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (type === 'positive') {
+        typePosBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-pastel-pinkMain bg-pastel-pinkLight text-pastel-pinkDeep shadow-sm";
+        typeNegBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-transparent bg-gray-50 text-gray-500 hover:bg-rose-50";
+        
+        quickTagsContainer.classList.remove('hidden');
+        posUploadContainer.classList.remove('hidden');
+        negEvidenceContainer.classList.add('hidden');
+        
+        commentLabel.innerHTML = 'ข้อความรีวิวเพิ่มเติม (ไม่จำเป็นต้องพิมพ์ก็ได้ค่ะ)';
+        modalComment.placeholder = 'เขียนความประทับใจ หรือข้อความให้กำลังใจร้าน Cuffyhome...';
+        submitBtn.className = "w-full py-3.5 bg-gradient-to-r from-pastel-pinkMain to-pink-500 hover:from-pink-500 hover:to-pastel-pinkDark text-white font-medium text-sm rounded-2xl shadow-pink-glow active:scale-[0.99] transition flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>ส่งคะแนนเครดิต ✨</span>';
+      } else {
+        typeNegBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-rose-500 bg-rose-50 text-rose-700 shadow-sm";
+        typePosBtn.className = "flex flex-col items-center justify-center py-3.5 px-4 rounded-2xl border-2 transition text-center gap-1 border-transparent bg-gray-50 text-gray-500 hover:bg-pink-50";
+        
+        quickTagsContainer.classList.add('hidden');
+        posUploadContainer.classList.add('hidden');
+        negEvidenceContainer.classList.remove('hidden');
+        
+        commentLabel.innerHTML = 'รายละเอียดการโกง / ปัญหาที่พบ <span class="text-rose-500">*จำเป็น</span>';
+        modalComment.placeholder = 'ระบุรายละเอียด เช่น วันที่โอนเงิน, ช่องทางที่สั่งซื้อ, พฤติกรรมการโกง...';
+        submitBtn.className = "w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-medium text-sm rounded-2xl shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>ส่งรายงานการโกง (-1) ⚠️</span>';
+      }
+    }
+
+    // --- เลือก Tag ด่วน ---
+    function toggleTag(btn, tagName) {
+      if (selectedTags.includes(tagName)) {
+        selectedTags = selectedTags.filter(t => t !== tagName);
+        btn.classList.remove('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+        btn.classList.add('bg-white', 'text-pastel-textMain', 'border-pink-200');
+      } else {
+        selectedTags.push(tagName);
+        btn.classList.remove('bg-white', 'text-pastel-textMain', 'border-pink-200');
+        btn.classList.add('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+      }
+    }
+
+    // --- ฟังก์ชันกด +1 ด่วน (One-Click +1) ---
+    function quickAddPositiveCredit() {
+      // เอฟเฟกต์ Confetti หัวใจ
+      triggerConfettiHearts();
+
+      const newCredit = {
+        id: Date.now(),
+        type: 'positive',
+        author: 'ลูกค้า (กด +1 ด่วน)',
+        comment: '',
+        tags: ['กดให้เครดิตด่วน 💖'],
+        image: null,
+        date: 'เมื่อสักครู่',
+        likes: 0
+      };
+
+      reviews.unshift(newCredit);
+      renderReviews();
+      updateStats();
+      showToast('ขอบคุณสำหรับเครดิต +1 ให้ร้าน Cuffyhome นะคะ ✨', 'success');
+    }
+
+    // --- ประมวลผลเมื่อกดส่งฟอร์ม Modal ---
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const author = document.getElementById('modalAuthor').value.trim() || 'ไม่ระบุตัวตน';
+      const comment = document.getElementById('modalComment').value.trim();
+
+      // ตรวจสอบเงื่อนไขสำหรับ -1 (ต้องมีหลักฐานและคำอธิบาย)
+      if (currentFormType === 'negative') {
+        if (!uploadedImageBase64) {
+          showToast('กรุณาแนบรูปภาพหลักฐานการโกงสำหรับการรายงาน -1 ค่ะ', 'error');
+          return;
+        }
+        if (!comment) {
+          showToast('กรุณาระบุรายละเอียดการโกงด้วยนะคะ', 'error');
+          return;
+        }
+      }
+
+      // บันทึก Review ใหม่
+      const newReview = {
+        id: Date.now(),
+        type: currentFormType,
+        author: author,
+        comment: comment,
+        tags: currentFormType === 'positive' ? [...selectedTags] : [],
+        image: uploadedImageBase64 || null,
+        date: 'เมื่อสักครู่',
+        likes: 0
+      };
+
+      reviews.unshift(newReview);
+      renderReviews();
+      updateStats();
+      closeReviewModal();
+
+      if (currentFormType === 'positive') {
+        triggerConfettiHearts();
+        showToast('บันทึกเครดิตและรีวิวของคุณเรียบร้อยแล้ว ขอบคุณนะคะ 🌸', 'success');
+      } else {
+        showToast('รับเรื่องรายงาน -1 เรียบร้อยแล้ว ระบบได้บันทึกหลักฐานไว้แล้วค่ะ', 'warning');
+      }
+    }
+
+    // --- จัดการรูปภาพ Preview & Base64 ---
+    function handleImagePreview(event, previewId, containerId) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedImageBase64 = e.target.result;
+        document.getElementById(previewId).src = uploadedImageBase64;
+        document.getElementById(containerId).classList.remove('hidden');
+
+        if (previewId === 'posPreview') {
+          document.getElementById('posImageName').innerText = file.name;
+        } else {
+          document.getElementById('negImageName').innerText = 'แนบแล้ว: ' + file.name;
+          document.getElementById('negImageName').className = "text-[11px] text-center text-emerald-600 font-medium";
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage(inputId, containerId, nameId) {
+      document.getElementById(inputId).value = '';
+      document.getElementById(containerId).classList.add('hidden');
+      uploadedImageBase64 = null;
+      if (nameId === 'posImageName') {
+        document.getElementById(nameId).innerText = 'ยังไม่ได้เลือกรูป';
+      } else {
+        document.getElementById(nameId).innerText = 'ยังไม่มีหลักฐานแนบ';
+        document.getElementById(nameId).className = "text-[11px] text-center text-rose-500 font-medium";
+      }
+    }
+
+    // --- ฟังก์ชันกด Like ให้คะแนนคอมเมนต์ ---
+    function toggleLike(id) {
+      const item = reviews.find(r => r.id === id);
+      if (item) {
+        item.likes += 1;
+        renderReviews();
+      }
+    }
+
+    // --- ตัวกรองประเภท (Filter) ---
+    function setFilter(filter) {
+      currentFilter = filter;
+      const buttons = {
+        all: document.getElementById('filterAll'),
+        positive: document.getElementById('filterPos'),
+        negative: document.getElementById('filterNeg')
+      };
+
+      Object.keys(buttons).forEach(key => {
+        if (key === filter) {
+          buttons[key].className = "flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition bg-pastel-pinkMain text-white shadow-xs";
+        } else {
+          buttons[key].className = "flex-1 sm:flex-none text-xs font-medium px-3.5 py-1.5 rounded-xl transition text-pastel-textMuted hover:text-pastel-pinkDeep";
+        }
+      });
+
+      renderReviews();
+    }
+
+    function filterReviews() {
+      renderReviews();
+    }
+
+    // --- เรนเดอร์รายการรีวิว ---
+    function renderReviews() {
+      const listContainer = document.getElementById('reviewList');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      // กรองข้อมูล
+      let filtered = reviews.filter(r => {
+        const matchesFilter = currentFilter === 'all' || r.type === currentFilter;
+        const matchesSearch = r.author.toLowerCase().includes(searchTerm) || 
+                              r.comment.toLowerCase().includes(searchTerm) ||
+                              r.tags.some(t => t.toLowerCase().includes(searchTerm));
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="bg-white rounded-3xl p-8 text-center border border-pastel-border shadow-soft">
+            <span class="text-4xl block mb-2">🍃</span>
+            <p class="text-sm font-medium text-pastel-pinkDeep">ยังไม่มีรายการเครดิตหรือรีวิวในระบบ</p>
+            <p class="text-xs text-pastel-textMuted mt-1">สามารถกดปุ่ม "+1 เครดิตด่วน" ด้านบน หรือเขียนรีวิวเป็นคนแรกได้เลยค่ะ</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = filtered.map(r => {
+        const isPos = r.type === 'positive';
+        return `
+          <article class="bg-white rounded-3xl p-4 md:p-5 border ${isPos ? 'border-pastel-border hover:border-pink-200' : 'border-rose-200 bg-rose-50/20'} shadow-soft transition duration-200 animate-pop">
+            <div class="flex items-start justify-between gap-3">
+              
+              <!-- Avatar & Header info -->
+              <div class="flex items-start gap-3 flex-1">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-base shrink-0 ${
+                  isPos ? 'bg-pink-100 text-pastel-pinkMain' : 'bg-rose-100 text-rose-500'
+                }">
+                  <i class="${isPos ? 'fa-solid fa-heart' : 'fa-solid fa-triangle-exclamation'}"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2 mb-1">
+                    <span class="font-bold text-xs md:text-sm text-pastel-pinkDeep truncate">${escapeHtml(r.author)}</span>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
+                      isPos ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-100 text-rose-700 border border-rose-200'
+                    }">
+                      ${isPos ? '+1 ให้เครดิต' : '-1 แจ้งโกง'}
+                    </span>
+                    <span class="text-[11px] text-pastel-textMuted ml-auto sm:ml-0">• ${r.date}</span>
+                  </div>
+
+                  <!-- ข้อความรีวิว -->
+                  ${r.comment ? `
+                    <p class="text-xs md:text-sm text-pastel-textMain mt-1.5 leading-relaxed break-words">${escapeHtml(r.comment)}</p>
+                  ` : `
+                    <p class="text-xs text-pastel-textMuted italic mt-1">(กดรับรองเครดิตเรียบร้อย 💖)</p>
+                  `}
+
+                  <!-- Tags -->
+                  ${r.tags && r.tags.length > 0 ? `
+                    <div class="flex flex-wrap gap-1 mt-2.5">
+                      ${r.tags.map(tag => `
+                        <span class="text-[11px] bg-pink-50 text-pastel-pinkDeep px-2.5 py-0.5 rounded-lg border border-pink-100 font-normal">
+                          ${escapeHtml(tag)}
+                        </span>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  <!-- แนบรูปภาพ / หลักฐาน -->
+                  ${r.image ? `
+                    <div class="mt-3">
+                      <div class="inline-block relative rounded-2xl overflow-hidden border ${isPos ? 'border-pink-200' : 'border-rose-300'} shadow-xs cursor-pointer group" onclick="openImageModal('${r.image}', '${isPos ? 'รูปภาพสินค้าจากลูกค้า' : 'หลักฐานการโกง'}')">
+                        <img src="${r.image}" class="w-24 h-24 sm:w-32 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-200" alt="หลักฐาน/รูปรีวิว">
+                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs gap-1">
+                          <i class="fa-solid fa-magnifying-glass-plus"></i> ขยาย
+                        </div>
+                      </div>
+                      ${!isPos ? `
+                        <p class="text-[11px] text-rose-600 font-medium mt-1"><i class="fa-solid fa-paperclip"></i> มีหลักฐานการโกงแนบ</p>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Like button -->
+              <button onclick="toggleLike(${r.id})" class="flex items-center gap-1.5 text-xs text-pastel-textMuted hover:text-pastel-pinkMain bg-pastel-pinkLight/60 hover:bg-pastel-pinkLight px-2.5 py-1.5 rounded-xl transition active:scale-90 shrink-0">
+                <i class="fa-regular fa-thumbs-up text-xs"></i>
+                <span class="font-medium">${r.likes || 0}</span>
+              </button>
+
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // --- อัปเดตตัวเลขสถิติและคะแนนรวม ---
+    function updateStats() {
+      const posCount = reviews.filter(r => r.type === 'positive').length;
+      const negCount = reviews.filter(r => r.type === 'negative').length;
+      const total = reviews.length;
+
+      document.getElementById('statPosCount').innerText = `+${posCount}`;
+      document.getElementById('statNegCount').innerText = `-${negCount}`;
+      document.getElementById('countAll').innerText = total;
+      document.getElementById('countPos').innerText = posCount;
+      document.getElementById('countNeg').innerText = negCount;
+
+      let percentage = total > 0 ? Math.round((posCount / total) * 100) : 100;
+      document.getElementById('trustScorePercent').innerText = `${percentage}%`;
+    }
+
+    // --- ฟังก์ชันเปิด/ปิด Review Modal ---
+    function openReviewModal() {
+      const modal = document.getElementById('reviewModal');
+      const box = document.getElementById('modalBox');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeReviewModal() {
+      const modal = document.getElementById('reviewModal');
+      const box = document.getElementById('modalBox');
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('reviewForm').reset();
+        selectedTags = [];
+        uploadedImageBase64 = null;
+        document.querySelectorAll('.tag-chip').forEach(btn => {
+          btn.classList.remove('bg-pastel-pinkMain', 'text-white', 'border-pastel-pinkMain');
+          btn.classList.add('bg-white', 'text-pastel-textMain', 'border-pink-200');
+        });
+        removeImage('posImageInput', 'posPreviewContainer', 'posImageName');
+        removeImage('negEvidenceInput', 'negPreviewContainer', 'negImageName');
+        selectType('positive');
+      }, 200);
+    }
+
+    // --- ฟังก์ชันเปิดดูรูปขยาย (Image Lightbox) ---
+    function openImageModal(imgSrc, caption) {
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('fullImagePreview');
+      const cap = document.getElementById('imageModalCaption');
+      img.src = imgSrc;
+      cap.innerText = caption || 'รูปภาพประกอบ';
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+      }, 10);
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // --- Custom Toast Alert Notification ---
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let bgClass = 'bg-white border-pastel-pinkMain text-pastel-pinkDeep shadow-pink-glow';
+      let icon = '<i class="fa-solid fa-circle-check text-pink-500 text-base"></i>';
+
+      if (type === 'error') {
+        bgClass = 'bg-rose-50 border-rose-400 text-rose-800 shadow-md';
+        icon = '<i class="fa-solid fa-circle-exclamation text-rose-500 text-base"></i>';
+      } else if (type === 'warning') {
+        bgClass = 'bg-amber-50 border-amber-300 text-amber-800 shadow-md';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-base"></i>';
+      }
+
+      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl border ${bgClass} text-xs md:text-sm font-medium animate-pop pointer-events-auto transition-all`;
+      toast.innerHTML = `
+        ${icon}
+        <span class="flex-1">${escapeHtml(message)}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // --- เอฟเฟกต์หัวใจ Confetti ---
+    function triggerConfettiHearts() {
+      try {
+        confetti({
+          particleCount: 40,
+          spread: 60,
+          origin: { y: 0.8 },
+          colors: ['#F472B6', '#FDA4AF', '#FBCFE8', '#FFF1F2']
+        });
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    // ฟังก์ชันป้องกัน XSS
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
